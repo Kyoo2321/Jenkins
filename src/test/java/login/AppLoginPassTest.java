@@ -30,11 +30,9 @@ public class AppLoginPassTest {
 
     @BeforeAll
     void setupReport() {
-    ExtentSparkReporter spark = new ExtentSparkReporter("target/ValidatePromartLoginPass.html");
-
-    // 🔹 Forzar modo offline incrustando CSS/JS
+    String reportName = "ValidatePromart_" + System.currentTimeMillis() + ".html";
+    ExtentSparkReporter spark = new ExtentSparkReporter("target/" + reportName);
     spark.config().setOfflineMode(true);
-
     extent = new ExtentReports();
     extent.attachReporter(spark);
     }
