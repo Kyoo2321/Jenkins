@@ -26,11 +26,18 @@ pipeline {
             }
             post {
                 always {
-                    // 📌 Publicar resultados JUnit (estadísticas en Jenkins)
+                    // Publicar resultados JUnit (estadísticas en Jenkins)
                     junit '**/target/surefire-reports/*.xml'
 
-                    // 📌 Guardar reportes ExtentReports HTML como artefacto
-                    archiveArtifacts artifacts: 'target/*.html', fingerprint: true
+                    // Publicar HTML de ExtentReports visualmente en Jenkins
+                    publishHTML(target: [
+                        reportDir: 'target',   // Carpeta donde están los HTML generados
+                        reportFiles: 'ValidatePromartLoginPass.html,ValidatePromartLoginFail.html',
+                        reportName: 'ExtentReports',
+                        keepAll: true,
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true
+                    ])
                 }
             }
         }
