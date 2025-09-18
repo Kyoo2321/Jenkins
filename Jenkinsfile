@@ -30,7 +30,7 @@ pipeline {
                     junit '**/target/surefire-reports/*.xml'
 
                     // 📌 Guardar reportes ExtentReports HTML como artefacto
-                    archiveArtifacts artifacts: 'target/ExtentReport*.html', fingerprint: true
+                    archiveArtifacts artifacts: 'target/*.html', fingerprint: true
                 }
             }
         }
