@@ -10,9 +10,9 @@ import org.junit.jupiter.api.extension.TestWatcher;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
 import java.io.File;
@@ -40,37 +40,58 @@ public class AppLoginFailTest {
         test = extent.createTest(testInfo.getDisplayName());
         WebDriverManager.chromedriver().setup();
 
-        driver = new ChromeDriver();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        test.info("ChromeDriver initialized");
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--disable-extensions");
+        String tempProfile = System.getProperty("user.dir") + "/target/chrome-profile-" + System.currentTimeMillis();
+        options.addArguments("--user-data-dir=" + tempProfile);
+
+        driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0)); // usar solo Explicit Wait
+        test.info("ChromeDriver initialized in headless mode with unique profile");
     }
 
-    @Test //
+    @Test
     @DisplayName("ValidatePromartLoginFail")
     void testGoogleTitle() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
         driver.get("https://www.promart.pe/");
         test.info("Promart login page opened");
 
-        driver.manage().window().maximize();
-        test.info("Page maximized");
-
-        driver.findElement(By.cssSelector("a[class='js-user vdk']")).click();
+        // Click en "Mi cuenta"
+        WebElement miCuentaBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.js-user.vdk")));
+        miCuentaBtn.click();
         test.info("Click en Mi cuenta");
-        driver.findElement(By.cssSelector("a[class='info-icon logged']")).click();
-        test.info("Click en inicio sesion");
-        driver.findElement(By.id("inputEmail")).sendKeys("kevinosco0@gmail.com");
+
+        // Click en "Inicio sesión"
+        WebElement loginBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.info-icon.logged")));
+        loginBtn.click();
+        test.info("Click en inicio sesión");
+
+        // Insert username
+        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("inputEmail")));
+        emailInput.sendKeys("kevinosco0@gmail.com");
         test.info("insert username");
-        driver.findElement(By.id("inputPassword")).sendKeys("Polosco123");
+
+        // Insert password incorrecta
+        WebElement passwordInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("inputPassword")));
+        passwordInput.sendKeys("Polosco123");
         test.info("insert password");
-        driver.findElement(By.cssSelector("button[id='classicLoginBtn']")).click();
+
+        // Click en "Ingresar"
+        WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(By.id("classicLoginBtn")));
+        submitBtn.click();
         test.info("Click button Ingresar");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span[data-i18n='vtexid.invalidAuth']")));
-
-        // Validacion de contenido
-        String alert = driver.findElement(By.cssSelector("span[data-i18n='vtexid.invalidAuth']")).getText();
+        // Validar mensaje de error
+        WebElement alertMsg = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("span[data-i18n='vtexid.invalidAuth']")));
+        String alert = alertMsg.getText();
         test.info("Alert obtained: " + alert);
 
         assertTrue(alert.contains("incorrecta"));
@@ -82,9 +103,7 @@ public class AppLoginFailTest {
         extent.flush();
     }
 
-    // 🔹 Vigilante para gestionar fallos y cierres del navegador
     static class ScreenshotWatcher implements TestWatcher {
-
         @Override
         public void testFailed(ExtensionContext context, Throwable cause) {
             Object testInstance = context.getRequiredTestInstance();
@@ -118,22 +137,13 @@ public class AppLoginFailTest {
         }
     }
 
-    // 🔹 Metodo para tomar screenshots
     private String takeScreenshot(String testName) throws IOException {
         TakesScreenshot ts = (TakesScreenshot) driver;
         File src = ts.getScreenshotAs(OutputType.FILE);
-
-        String destDir = "C:/Users/fiore/Desktop/Kevin/QA/Proyectos/prueba/target/screenshots/";
+        String destDir = System.getProperty("user.dir") + "/target/screenshots/";
         String destPath = destDir + testName + ".png";
-
-        // Crear carpeta si no existe
         Files.createDirectories(Paths.get(destDir));
-
-        // Copiar archivo de captura de pantalla
         Files.copy(src.toPath(), Paths.get(destPath));
-
-        // 🔹 ExtentReports necesita una ruta con "/"
         return destPath.replace("\\", "/");
     }
-
 }
