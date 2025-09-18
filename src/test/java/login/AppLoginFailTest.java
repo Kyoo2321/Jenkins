@@ -10,13 +10,11 @@ import org.junit.jupiter.api.extension.TestWatcher;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
-import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,13 +39,6 @@ public class AppLoginFailTest {
     void setup(TestInfo testInfo) {
         test = extent.createTest(testInfo.getDisplayName());
         WebDriverManager.chromedriver().setup();
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080");
-        options.addArguments("--user-data-dir=/tmp/chrome-user-data-" + UUID.randomUUID());
 
         driver = new ChromeDriver();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
