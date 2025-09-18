@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
+import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,6 +46,7 @@ public class AppLoginPassTest {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--window-size=1920,1080");
+        options.addArguments("--user-data-dir=/tmp/chrome-user-data-" + UUID.randomUUID());
 
         driver = new ChromeDriver();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
