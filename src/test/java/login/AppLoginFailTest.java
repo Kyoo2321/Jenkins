@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.TestWatcher;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -39,6 +40,13 @@ public class AppLoginFailTest {
     void setup(TestInfo testInfo) {
         test = extent.createTest(testInfo.getDisplayName());
         WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--window-size=1920,1080");
+
         driver = new ChromeDriver();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         test.info("ChromeDriver initialized");
@@ -65,7 +73,8 @@ public class AppLoginFailTest {
         test.info("Click button Ingresar");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span[data-i18n='vtexid.invalidAuth']")));
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span[data-i18n='vtexid.invalidAuth']")));
 
         // Validacion de contenido
         String alert = driver.findElement(By.cssSelector("span[data-i18n='vtexid.invalidAuth']")).getText();
