@@ -30,9 +30,13 @@ public class AppLoginFailTest {
 
     @BeforeAll
     void setupReport() {
-        ExtentSparkReporter spark = new ExtentSparkReporter("target/ValidatePromartLoginFail.html");
-        extent = new ExtentReports();
-        extent.attachReporter(spark);
+    ExtentSparkReporter spark = new ExtentSparkReporter("target/ValidatePromartLoginFail.html");
+
+    // 🔹 Forzar modo offline incrustando CSS/JS
+    spark.config().setOfflineMode(true);
+
+    extent = new ExtentReports();
+    extent.attachReporter(spark);
     }
 
     @BeforeEach
