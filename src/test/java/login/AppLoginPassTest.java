@@ -24,17 +24,25 @@ import java.nio.file.Paths;
 @ExtendWith(AppLoginPassTest.ScreenshotWatcher.class)
 public class AppLoginPassTest {
 
-    private static ExtentReports extent;
+    private ExtentReports extent;
     private WebDriver driver;
     ExtentTest test;
+    private String reportFile;
 
     @BeforeAll
-    void setupReport() {
-    String reportName = "ValidatePromart_" + System.currentTimeMillis() + ".html";
-    ExtentSparkReporter spark = new ExtentSparkReporter("target/" + reportName);
-    spark.config().setOfflineMode(true);
-    extent = new ExtentReports();
-    extent.attachReporter(spark);
+    void setupReport() throws IOException {
+        // Crear carpeta target si no existe
+        String reportDir = System.getProperty("user.dir") + "/target/";
+        Files.createDirectories(Paths.get(reportDir));
+
+        // Nombre de reporte dinámico
+        reportFile = reportDir + "ValidatePromartPass_" + System.currentTimeMillis() + ".html";
+
+        ExtentSparkReporter spark = new ExtentSparkReporter(reportFile);
+        spark.config().setOfflineMode(true);
+
+        extent = new ExtentReports();
+        extent.attachReporter(spark);
     }
 
     @BeforeEach
@@ -42,7 +50,6 @@ public class AppLoginPassTest {
         test = extent.createTest(testInfo.getDisplayName());
         WebDriverManager.chromedriver().setup();
 
-        // ChromeOptions headless + perfil temporal
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
         options.addArguments("--disable-gpu");
@@ -66,32 +73,26 @@ public class AppLoginPassTest {
         driver.get("https://www.promart.pe/");
         test.info("Promart login page opened");
 
-        // Click en "Mi cuenta"
         WebElement miCuentaBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.js-user.vdk")));
         miCuentaBtn.click();
         test.info("Click en Mi cuenta");
 
-        // Click en "Inicio sesión"
         WebElement loginBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.info-icon.logged")));
         loginBtn.click();
         test.info("Click en inicio sesión");
 
-        // Insert username
         WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("inputEmail")));
         emailInput.sendKeys("kevinosco0@gmail.com");
         test.info("insert username");
 
-        // Insert password
         WebElement passwordInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("inputPassword")));
         passwordInput.sendKeys("Polosco123@");
         test.info("insert password");
 
-        // Click en "Ingresar"
         WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(By.id("classicLoginBtn")));
         submitBtn.click();
         test.info("Click button Ingresar");
 
-        // Validar login
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector("body.home.home-redisign.not-express.logged")));
         test.info("Login page loaded");
@@ -108,7 +109,10 @@ public class AppLoginPassTest {
 
     @AfterAll
     void flushReport() {
-        extent.flush();
+        if (extent != null) {
+            extent.flush();
+        }
+        System.out.println("✅ ExtentReport generated: " + reportFile);
     }
 
     static class ScreenshotWatcher implements TestWatcher {
